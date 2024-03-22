@@ -1,0 +1,587 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cognito-authentication-prod-Create_auth_challenge_Lambda_trigger"
+      }
+    },
+    "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cognito-authentication-prod-Define_auth_challenge_Lambda_trigger"
+      }
+    },
+    "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cognito-authentication-prod-Post_confirmation_Lambda_trigger"
+      }
+    },
+    "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cognito-authentication-prod-Verify_auth_challenge_response_Lambda_trigger"
+      }
+    },
+    "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/cognito-authentication-prod-Pre_sign_up_Lambda_trigger"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "cognito-authentication",
+                  "prod",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cognito-authentication-prod*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/cognito-authentication-prod*:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:GetRole",
+                    "sns:*",
+                    "sqs:*"
+                  ],
+                  "Resource": "arn:aws:iam::809526267565:role/cognito-authentication-dev-ap-south-1-lambdaRole"
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "cognito-authentication",
+              "prod",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/cognito-authentication/prod/1711102128152-2024-03-22T10:08:48.152Z/cognito-authentication.zip"
+        },
+        "Handler": "functions/create-auth-challenge-lambda.main",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "cognito-authentication-prod-Create_auth_challenge_Lambda_trigger",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLogGroup"
+      ]
+    },
+    "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/cognito-authentication/prod/1711102128152-2024-03-22T10:08:48.152Z/cognito-authentication.zip"
+        },
+        "Handler": "functions/define-auth-challenge-lambda.main",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "cognito-authentication-prod-Define_auth_challenge_Lambda_trigger",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLogGroup"
+      ]
+    },
+    "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/cognito-authentication/prod/1711102128152-2024-03-22T10:08:48.152Z/cognito-authentication.zip"
+        },
+        "Handler": "functions/post-confirmation-lambda.main",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "cognito-authentication-prod-Post_confirmation_Lambda_trigger",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLogGroup"
+      ]
+    },
+    "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/cognito-authentication/prod/1711102128152-2024-03-22T10:08:48.152Z/cognito-authentication.zip"
+        },
+        "Handler": "functions/verify-auth-challenge-lambda.main",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "cognito-authentication-prod-Verify_auth_challenge_response_Lambda_trigger",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLogGroup"
+      ]
+    },
+    "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/cognito-authentication/prod/1711102128152-2024-03-22T10:08:48.152Z/cognito-authentication.zip"
+        },
+        "Handler": "functions/pre-sign-up-lambda.main",
+        "Runtime": "python3.11",
+        "FunctionName": "cognito-authentication-prod-Pre_sign_up_Lambda_trigger",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLogGroup"
+      ]
+    },
+    "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaVersion7RtHB3U7eogCvOKcdYnLsCooSZ8MS5bC2kpp4Z9E": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction"
+        },
+        "CodeSha256": "QFIUC9XSUiKUqg34vfNLaSfVbiGf47PtC0Zd4K5wN8Q="
+      }
+    },
+    "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaVersion5a79fxliOXWnVn10iqoLrFsnuPPzQJoxSoKatLKaEsk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction"
+        },
+        "CodeSha256": "QFIUC9XSUiKUqg34vfNLaSfVbiGf47PtC0Zd4K5wN8Q="
+      }
+    },
+    "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaVersionDVvnDFnPLWNOT5hDyXAZVQpCWqk1evyxAYBD5wRXf0c": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunction"
+        },
+        "CodeSha256": "QFIUC9XSUiKUqg34vfNLaSfVbiGf47PtC0Zd4K5wN8Q="
+      }
+    },
+    "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaVersion6D7ifT54obOOik7bbhWtb60yqCmhV96JNwnyraW7c": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunction"
+        },
+        "CodeSha256": "QFIUC9XSUiKUqg34vfNLaSfVbiGf47PtC0Zd4K5wN8Q="
+      }
+    },
+    "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaVersionL8PFW4UUYi2Krr0D749Li01BhZkAiPpTFgeYuXM": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunction"
+        },
+        "CodeSha256": "QFIUC9XSUiKUqg34vfNLaSfVbiGf47PtC0Zd4K5wN8Q="
+      }
+    },
+    "CognitoUserPoolMyUserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": "prod-user-pool",
+        "LambdaConfig": {
+          "CreateAuthChallenge": {
+            "Fn::GetAtt": [
+              "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+              "Arn"
+            ]
+          },
+          "DefineAuthChallenge": {
+            "Fn::GetAtt": [
+              "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+              "Arn"
+            ]
+          },
+          "PostConfirmation": {
+            "Fn::GetAtt": [
+              "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunction",
+              "Arn"
+            ]
+          },
+          "VerifyAuthChallengeResponse": {
+            "Fn::GetAtt": [
+              "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunction",
+              "Arn"
+            ]
+          },
+          "PreSignUp": {
+            "Fn::GetAtt": [
+              "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunction",
+              "Arn"
+            ]
+          }
+        },
+        "UsernameAttributes": [
+          "phone_number"
+        ],
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 6,
+            "RequireLowercase": false,
+            "RequireNumbers": false,
+            "RequireSymbols": false,
+            "RequireUppercase": false
+          }
+        }
+      },
+      "DependsOn": [
+        "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+        "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+        "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunction",
+        "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunction",
+        "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunction"
+      ]
+    },
+    "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourceCreateAuthChallenge": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CognitoUserPoolMyUserPool",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourceDefineAuthChallenge": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CognitoUserPoolMyUserPool",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourcePostConfirmation": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CognitoUserPoolMyUserPool",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourceVerifyAuthChallengeResponse": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CognitoUserPoolMyUserPool",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaPermissionCognitoUserPoolMyUserPoolTriggerSourcePreSignUp": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CognitoUserPoolMyUserPool",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "CognitoUserPoolClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "ClientName": "prod-sms-auth-client",
+        "UserPoolId": {
+          "Ref": "CognitoUserPoolMyUserPool"
+        },
+        "ExplicitAuthFlows": [
+          "CUSTOM_AUTH_FLOW_ONLY"
+        ],
+        "GenerateSecret": false
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-ServerlessDeploymentBucketName"
+      }
+    },
+    "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaVersion7RtHB3U7eogCvOKcdYnLsCooSZ8MS5bC2kpp4Z9E"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-CreateUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn"
+      }
+    },
+    "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaVersion5a79fxliOXWnVn10iqoLrFsnuPPzQJoxSoKatLKaEsk"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-DefineUnderscoreauthUnderscorechallengeUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn"
+      }
+    },
+    "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaVersionDVvnDFnPLWNOT5hDyXAZVQpCWqk1evyxAYBD5wRXf0c"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-PostUnderscoreconfirmationUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn"
+      }
+    },
+    "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaVersion6D7ifT54obOOik7bbhWtb60yqCmhV96JNwnyraW7c"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-VerifyUnderscoreauthUnderscorechallengeUnderscoreresponseUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn"
+      }
+    },
+    "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaVersionL8PFW4UUYi2Krr0D749Li01BhZkAiPpTFgeYuXM"
+      },
+      "Export": {
+        "Name": "sls-cognito-authentication-prod-PreUnderscoresignUnderscoreupUnderscoreLambdaUnderscoretriggerLambdaFunctionQualifiedArn"
+      }
+    }
+  }
+}
