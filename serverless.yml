@@ -22,7 +22,7 @@ provider:
         - iam:GetRole
         - sns:*
         - sqs:*
-      Resource: arn:aws:iam::809526267565:role/cognito-authentication-dev-ap-south-1-lambdaRole
+      Resource: arn:aws:iam::809526267565:role/cognito-authentication-prod-ap-south-1-lambdaRole
 
 
 functions:
